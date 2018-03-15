@@ -13,8 +13,8 @@ defmodule DomainTest do
   end
 
   test "order_quantity can be a float or a number" do
-    assert 1 = order(1)
-    assert 2.0 = order(0, 1.0)
+    assert 1 = order(unit_quantity: 1)
+    assert 2.0 = order(kilogram_quantity: 1.0)
   end
 
   @spec widget(String.t) :: OrderTaking.Domain.widget_code
@@ -32,8 +32,14 @@ defmodule DomainTest do
     widget(message) <> gizmo(message)
   end
 
-  @spec order(OrderTaking.Domain.unit_quantity, OrderTaking.Domain.kilogram_quantity) :: OrderTaking.Domain.order_quantity
-  def order(unit_quantity \\ 0, kilogram_quantity \\ 0.0)
-  def order(unit_quantity, 0.0) do unit_quantity end
-  def order(0, kilogram_quantity) do kilogram_quantity * 2 end
+  @spec order(%{}) :: OrderTaking.Domain.order_quantity
+  def order(options \\ []) do
+    defaults = [unit_quantity: 0, kilogram_quantity: 0.0]
+    options = Keyword.merge(defaults, options) |> Enum.into(%{})
+    %{unit_quantity: unit_quantity, kilogram_quantity: kilogram_quantity} = options
+    do_order unit_quantity, kilogram_quantity
+  end
+
+  def do_order(unit_quantity, 0.0) do unit_quantity end
+  def do_order(0, kilogram_quantity) do kilogram_quantity * 2 end
 end
